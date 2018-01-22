@@ -1,22 +1,12 @@
-### Kong - API-Gateway on Weaveworks-ECS AMI
+### HA Kafka cluster on ECS
 ---  
 
 
-###### -- Kong an open source API Gateway that runs in front of RESTful APIs.
-###### -- Built on top of battle tested Nginx webserver
-###### -- Scalable - Easy horizontal scaling
-###### -- Modular - Can be extended via plugins
-###### -- Minimal requirements - Can run on Cloud platforms, Containers, On-premise etc
-###### -- Backed by Cassandra or Postgres
+###### -- Three node kafka cluster which includes HA zookeeper
+###### -- EFS volumes mounted and used by both Kafka & Zookeeper
+###### -- Scalable - Easy horizontal scaling for Kafka nodes
 
-<br />
 
-#### Weave with ECS
----
-
-![alt text](https://raw.githubusercontent.com/faizan82/ECS-kong/master/images/weave-on-ecs.png)
-
-<br />
 
 
 
