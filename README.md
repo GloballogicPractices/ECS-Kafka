@@ -1,20 +1,17 @@
-### Kong - API-Gateway on Weaveworks-ECS AMI
+### HA Kafka cluster on ECS
 ---  
 
 
-###### -- Kong an open source API Gateway that runs in front of RESTful APIs.
-###### -- Built on top of battle tested Nginx webserver
-###### -- Scalable - Easy horizontal scaling
-###### -- Modular - Can be extended via plugins
-###### -- Minimal requirements - Can run on Cloud platforms, Containers, On-premise etc
-###### -- Backed by Cassandra or Postgres
+###### -- Three node kafka cluster which includes HA zookeeper
+###### -- EFS volumes mounted and used by both Kafka & Zookeeper
+###### -- Scalable - Easy horizontal scaling for Kafka nodes
 
 <br />
 
 #### Weave with ECS
 ---
 
-![alt text](https://raw.githubusercontent.com/faizan82/ECS-kong/master/images/weave-on-ecs.png)
+![alt text](https://raw.githubusercontent.com/GloballogicPractices/ECS-kafka/master/images/kafka-on-ecs.png)
 
 <br />
 
@@ -29,7 +26,7 @@
 - Demostrate use of WeaveWorks networking in deploying the cluster and service discovery in ECS
 - Demonstrate use of overlay network for ECS
 - Demonstrate use of Cloudwatch-logs. A log group and stream is setup for log forwarding and aws logging driver is used.
-- Demonstrate cloud-init with Terraform 
+- Demonstrate cloud-init with Terraform
 
 
 
@@ -45,37 +42,37 @@
 
 <br />
 
-#### Deployment architecture 
+#### Deployment architecture
 ---
 ![alt text](https://raw.githubusercontent.com/faizan82/ECS-kong/master/images/kong-architecture.png)
 
 
 <br />
 
-### Deployment 
+### Deployment
 ---
 #### What is deployed?
 1. VPC - Three private subnets and three public subnets
-2. Two ECS Clusters ( Kong and Cassandra in public and private subnets respectively) 
+2. Two ECS Clusters ( Kong and Cassandra in public and private subnets respectively)
 3. A bastion node.
-4. AWS Log group and log stream 
-5. EBS Volumes of 50G attached to each Cassandra node using cloud-init 
-6. Route53 entries based on choosen domain names and details provided to Terraform 
+4. AWS Log group and log stream
+5. EBS Volumes of 50G attached to each Cassandra node using cloud-init
+6. Route53 entries based on choosen domain names and details provided to Terraform
 
 
 #### Deployment procedure
-1. Ensure pre-requisites are met 
-2. Decide a region where this needs to be deployed 
-3. This guides a cluster in a region with 3 AZs. You can reduce the number in terraform.tfvars file 
-4. Generate your ACM Certificates for the domain 
+1. Ensure pre-requisites are met
+2. Decide a region where this needs to be deployed
+3. This guides a cluster in a region with 3 AZs. You can reduce the number in terraform.tfvars file
+4. Generate your ACM Certificates for the domain
 5. Ensure a private key is available in AWS
 
 
 ```shell
 # Prepare your environment ( Terraform and Ansible )
-# Change directory to terraform/environments/development 
+# Change directory to terraform/environments/development
 # We are considering a sample development environment
-# Update secrets.tf file with your public key 
+# Update secrets.tf file with your public key
 
 $ cat secrets.tf
 aws_key_name = "test-cluster-key"
@@ -92,7 +89,7 @@ $ export AWS_DEFAULT_REGION="us-west-2"
 
 ```
 
-#### terraform.tfvars for your infra 
+#### terraform.tfvars for your infra
 
 ```shell
 /*
@@ -197,10 +194,10 @@ main_ssl_certificate_id      = "ARNOFYOURCERT"
 ```
 
 
-##### Plan and setup 
+##### Plan and setup
 ```shell
 terraform plan -var-file="secrets.tf"
-# If successful then 
+# If successful then
 terraform apply -varf-file="secrets.tf"
 ## There should be no manual intervention required.
 ```

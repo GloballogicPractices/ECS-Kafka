@@ -11,7 +11,7 @@ c1_ports:
   - c1hostPort: 9020
     c1containerPort: 9020
     c1protocol: tcp
-c1_image: 953030164212.dkr.ecr.us-east-1.amazonaws.com/kafka:{{ build_no | default ('latest')}}
+c1_image: fali2/ecs-zookeeper:latest
 c1_essential: "True"
 c1_privileged: False
 c1_environment_variables:
@@ -41,7 +41,7 @@ mount_readonly_bool: False
 # Service Setup
 cluster_name: "Kafka-cluster-{{env}}"
 service_name: "kafka-service"
-count: "1"
+count: "3"
 
 # Stage to Prod it has to be rolling update
 maximumPercent: 200

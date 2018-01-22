@@ -47,6 +47,11 @@ module "vpc" {
    environment              = "${var.environment}"
 }
 
+module "glp-private-zone" {
+   source            = "../../modules/route53-hosted-zone"
+   hosted_zone_name  = "${var.environment}-internal.com"
+   vpc_id            = "${module.glp-vpc.vpc_id}"
+}
 
 module "bastion" {
    source                = "../../modules/bastion"
@@ -63,54 +68,6 @@ module "bastion" {
    environment           = "${var.environment}"
 }
 
-
-module "ecs-cassandra-cluster" {
-   source                      = "../../modules/ecs-cassandra-cluster"
-   private_subnet_ids          = "${module.vpc.aws_pri_subnet_id}"
-   vpc-id                      = "${module.vpc.vpc_id}"
-   region                      = "${var.region}"
-   keypair_public_key          = "${var.keypair_public_key}"
-   aws_key_name                = "${var.aws_key_name}"
-   control_cidr                = "${var.private_sub_control_cidr}"
-   cassandra_instance_type     = "${var.cassandra_instance_type}"
-   #vpc_sg_id                  = "${module.vpc.aws_default_sg_id}"
-   environment                 = "${var.environment}"
-   bastion_sg_id               = "${module.bastion.bastion-sg-id}"
-   //dependency_id             = "${module.efs-private-subnet.dependency_id}"
-   cass_ebs_dev_name           = "${var.cass_ebs_dev_name}"
-   cass_ebs_vol_type           = "${var.cass_ebs_vol_type}"
-   cass_ebs_vol_size           = "${var.cass_ebs_vol_size}"
-   cass_data_dir               = "${var.cass_data_dir}"
-   cassandra_asg_max_size      = "${var.cassandra_asg_max_size}"
-   cassandra_asg_min_size      = "${var.cassandra_asg_min_size}"
-   cassandra_asg_desired_size  = "${var.cassandra_asg_desired_size}"
-   ami_owner_name              = "${var.ami_owner_name}"
-   ami_name_regex              = "${var.ami_name_regex}"
-   vpc_cidr                    = "${var.vpc_cidr}"
-}
-
-
-module "ecs-ingress-cluster" {
-   source                       = "../../modules/ecs-kong-cluster"
-   vpc-id                       = "${module.vpc.vpc_id}"
-   public_subnet_ids            = "${module.vpc.aws_pub_subnet_id}"
-   region                       = "${var.region}"
-   load_balancers               = [ "${module.kong-external-elb.kong-external-elb-name}",
-                                    "${module.external-elb.main-elb-name}"
-                                  ]
-   keypair_public_key           = "${var.keypair_public_key}"
-   aws_key_name                 = "${var.aws_key_name}"
-   control_cidr                 = "${var.private_sub_control_cidr}"
-   bastion_sg_id                = "${module.bastion.bastion-sg-id}"
-   environment                  = "${var.environment}"
-   ingress_instance_type        = "${var.ingress_instance_type}"
-   kong_asg_max_size            = "${var.kong_asg_max_size}"
-   kong_asg_min_size            = "${var.kong_asg_min_size}"
-   kong_asg_desired_size        = "${var.kong_asg_desired_size}"
-   ami_owner_name               = "${var.ami_owner_name}"
-   ami_name_regex               = "${var.ami_name_regex}"
-   vpc_cidr                     = "${var.vpc_cidr}"
-}
 
 /* Kafka cluster */
 module "ecs-kafka-cluster" {
@@ -149,71 +106,6 @@ module "efs-private-subnet" {
 }
 
 
-/**********************************
-This requires
-- ACM certificates for the domains
-***********************************/
-module "kong-external-elb" {
-   source              = "../../modules/elb-kong"
-   vpc_id              = "${module.vpc.vpc_id}"
-   subnets             = "${module.vpc.aws_pub_subnet_id}"
-   elb_is_internal     = "false"
-   elb_name            = "${var.kong_elb_name}"
-   elb_control_cidr    = "${var.control_cidr}"
-   elb_sg_name         = "${var.kong_elb_sg_name}"
-   healthy_threshold   = "${var.kong_elb_healthy_threshold}"
-   unhealthy_threshold = "${var.kong_elb_unhealthy_threshold}"
-   timeout             = "${var.kong_elb_timeout}"
-   elb_health_target   = "${var.kong_elb_elb_health_target}"
-   interval            = "${var.kong_elb_interval}"
-   ssl_certificate_id  = "${var.kong_ssl_certificate_id}"
-   environment         = "${var.environment}"
-}
-
-
-# Main ELB for transformation via kong
-module "external-elb" {
-   source              = "../../modules/elb-main"
-   vpc_id              = "${module.vpc.vpc_id}"
-   subnets             = "${module.vpc.aws_pub_subnet_id}"
-   elb_is_internal     = "false"
-   elb_name            = "${var.main_elb_name}-${var.environment}"
-   elb_control_cidr    = "${var.control_cidr}"
-   elb_sg_name         = "${var.main_elb_sg_name}"
-   healthy_threshold   = "${var.main_elb_healthy_threshold}"
-   unhealthy_threshold = "${var.main_elb_unhealthy_threshold}"
-   timeout             = "${var.main_elb_timeout}"
-   elb_health_target   = "${var.main_elb_elb_health_target}"
-   interval            = "${var.main_elb_interval}"
-   ssl_certificate_id  = "${var.main_ssl_certificate_id}"
-   environment         = "${var.environment}"
-}
-
-
-/*
-- Creating alias records to KONG node. All of this routing will be done via API-GW
-- Requires Pre-existing domain name
-- You can disable the below modules if you do not have a domain registerred
-*/
-
-module "main-dns-entry" {
-   source           = "../../modules/route53-elb"
-   main_zone_id     = "${var.main_zone_id}"
-   main_dns_name    = "myapp-${var.environment}"
-   route53_domain   = "${var.public_domain_name}"
-   elb_main_name    = "${module.external-elb.main-elb-dns-name}"
-   elb_main_zone_id = "${module.external-elb.main-elb-zone-id}"
-}
-
-module "kong-dns-entry" {
-   source           = "../../modules/route53-elb"
-   main_zone_id     = "${var.main_zone_id}"
-   main_dns_name    = "kong-${var.environment}"
-   route53_domain   = "${var.public_domain_name}"
-   elb_main_name    = "${module.kong-external-elb.kong-external-elb-dns-name}"
-   elb_main_zone_id = "${module.kong-external-elb.kong-external-elb-zone-id}"
-}
-
 module "aws-log-group" {
    source           = "../../modules/cloudwatch-log-groups"
    log_group_name   = "/ecs/${var.environment}-logs"
@@ -221,16 +113,14 @@ module "aws-log-group" {
 }
 
 
-# Local provisioning
 module "ansible-ecs-setup" {
    source                        = "../../modules/ansible-ecs"
    env                           = "${var.environment}"
    region                        = "${var.region}"
-   log_group_name                = "/ecs/${var.environment}-logs"
+   # This is only used for Couchbase server
+   route53_private_domain        = "${var.environment}-internal.com"
    # These add explicit dependencies
    dependency_id          = [
-                                 "${module.ecs-cassandra-cluster.dependency_id}",
-                                 "${module.ecs-ingress-cluster.dependency_id}",
-                                 "${module.vpc.vpc_id}"
+                                 "${module.ecs-kafka-cluster.dependency_id}"
                             ]
 }
