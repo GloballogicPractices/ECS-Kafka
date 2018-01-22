@@ -31,7 +31,7 @@
 
 
 ##### Pre-requisites
-- AWS account. Obviously!
+- AWS account.
 - Terraform > 0.9.5
 - Ansible >= 2.3
 - Python 2.7
