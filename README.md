@@ -6,14 +6,13 @@
 ###### -- EFS volumes mounted and used by both Kafka & Zookeeper
 ###### -- Scalable - Easy horizontal scaling for Kafka nodes
 
-<br />
 
-#### Weave with ECS
----
 
 ![alt text](https://raw.githubusercontent.com/GloballogicPractices/ECS-kafka/master/images/kafka-on-ecs.png)
 
 <br />
+=======
+
 
 
 
