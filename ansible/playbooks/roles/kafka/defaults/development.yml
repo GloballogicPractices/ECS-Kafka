@@ -1,0 +1,48 @@
+task_family: "KAFKA"
+task_role_arn: ''
+network_mode: 'host'
+
+# First container
+c1_appname: kafka
+c1_cpu: 512
+c1_memory: 3500
+c1_soft_memory: 1024
+c1_ports:
+  - c1hostPort: 9020
+    c1containerPort: 9020
+    c1protocol: tcp
+c1_image: 953030164212.dkr.ecr.us-east-1.amazonaws.com/kafka:{{ build_no | default ('latest')}}
+c1_essential: "True"
+c1_privileged: False
+c1_environment_variables:
+  - c1name : KAFKA_ADVERTISED_PORT
+    c1value: >
+       "9092"
+  - c1name: KAFKA_ZOOKEEPER_CONNECT
+    c1value: >
+      "zookeeper.{{env}}-internal.com:2181"
+
+c1_awslogs_group: "/aws/ecs/{{env}}"
+# Our logs go to us-east-2
+c1_log_region: "us-east-2"
+c1_awslogs_stream_prefix: kafka/
+c1_docker_labels: kafka
+c1_docker_security_options: no-new-privileges
+
+
+# Volume attachment
+
+src_volume_name: "kafka-data"
+volume_src_path: "/kafka-data/kafka/"
+mount_container_path: "/kafka/"
+mount_readonly_bool: False
+
+
+# Service Setup
+cluster_name: "Kafka-cluster-{{env}}"
+service_name: "kafka-service"
+count: "1"
+
+# Stage to Prod it has to be rolling update
+maximumPercent: 200
+minimumHealthyPercent: 50

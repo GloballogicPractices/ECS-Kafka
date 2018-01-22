@@ -1,0 +1,13 @@
+#cloud-config
+
+repo_update: all
+repo_upgrade: all
+
+packages:
+ - python
+ - perl
+ - perl-Switch
+ - perl-DateTime
+ - perl-Sys-Syslog
+ - perl-LWP-Protocol-https
+ - perl-Digest-SHA

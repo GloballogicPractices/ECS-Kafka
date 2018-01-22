@@ -1,0 +1,46 @@
+---
+
+- include: playbooks/cassandra-master.yml
+  vars:
+    ecs_action: delete
+    env: "{{env}}"
+    region: "{{region}}"
+    log_group_name: "{{log_group_name}}"
+
+- include: playbooks/cassandra-client.yml
+  vars:
+    ecs_action: delete
+    env: "{{env}}"
+    region: "{{region}}"
+    log_group_name: "{{log_group_name}}"
+
+- include: playbooks/zookeeper.yml
+  vars:
+    ecs_action: delete
+    env: "{{env}}"
+    region: "{{region}}"
+    kafka_zk_cluster_name: "{{kafka_zk_cluster_name}}"
+
+- include: playbooks/kafka.yml
+  vars:
+    ecs_action: delete
+    env: "{{env}}"
+    region: "{{region}}"
+    kafka_zk_cluster_name: "{{kafka_zk_cluster_name}}"
+
+###############################################
+# Kong at last just to be in sync with delete.
+# Does not make any difference
+- include: playbooks/kong-master.yml
+  vars:
+    ecs_action: delete
+    env: "{{env}}"
+    region: "{{region}}"
+    log_group_name: "{{log_group_name}}"
+
+- include: playbooks/kong-client.yml
+  vars:
+    ecs_action: delete
+    env: "{{env}}"
+    region: "{{region}}"
+    log_group_name: "{{log_group_name}}"

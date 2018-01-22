@@ -1,0 +1,76 @@
+---
+
+# Variables file will be selected based on extra-var argument env
+- include_vars: ../kafka/defaults/{{env}}.yml
+
+
+- pause:
+    minutes: 5
+  when: ecs_action == "create"
+
+
+
+# All scripts are generated and executed from localhost. Ensure required
+# dependencies are met
+- name: Generate ecs-task def template
+  template: >
+     src=kafka-task-def.j2
+     dest=/tmp/kafka-task-def.yaml
+
+
+# ------------Service management------------------------#
+# Create task definition only but do not create service
+- name: Deploy kafka service
+  script: ../files/orchestrate.py -v -e "{{env}}" -r "{{region}}" -f /tmp/kafka-task-def.yaml --task
+  when: ecs_action == "task"
+  register: task_creation
+
+- debug: var=task_creation.stdout_lines
+  when: ecs_action == "task"
+
+# Update task definition and create service. Ensures that service uses tasks created from ansible only
+- name: Create service
+  script: ../files/orchestrate.py -v -e "{{env}}" -r "{{region}}" -f /tmp/kafka-task-def.yaml --create
+  when: ecs_action == "create"
+  register: service_creation
+
+- debug: var=service_creation.stdout_lines
+  when: ecs_action == "create"
+
+# Update service with new code but without increasing or decreasing the count
+- name: Update service without count
+  script: ../files/orchestrate.py -v -e "{{env}}" -r "{{region}}" -f /tmp/kafka-task-def.yaml --update
+  when: ecs_action == "update" and update_consul_master_count is not defined
+  register: service_update_without_count
+
+- debug: var=service_update_without_count.stdout_lines
+  when: ecs_action == "update" and update_consul_master_count is not defined
+
+# Update service with the specified count. Ensure count to use is set from update_consul_master_count
+# by passing it as extra-var
+- name: Update service with specified count
+  script: ../files/orchestrate.py -v -e "{{env}}" -r "{{region}}" -c "{{update_consul_master_count}}" -f /tmp/kafka-task-def.yaml --update
+  when: ecs_action == "update" and update_consul_master_count is defined
+  register: service_update_with_count
+
+- debug: var=service_update_with_count.stdout_lines
+  when: ecs_action == "update" and update_consul_master_count is defined
+
+
+# CAUTION:
+# There are no checks to ensure to if service should be deleted as this would be called by terraform
+- name: Delete service
+  script: ../files/orchestrate.py -v -e "{{env}}" -r "{{region}}" -f /tmp/kafka-task-def.yaml -c 0 --update
+  when: ecs_action == "delete"
+  register: service_update_before_delete
+
+- debug: var=service_update_before_delete.stdout_lines
+  when: ecs_action == "delete"
+
+- name: Delete service
+  script: ../files/orchestrate.py -v -e "{{env}}" -r "{{region}}" -f /tmp/kafka-task-def.yaml --delete
+  when: ecs_action == "delete"
+  register: service_delete
+
+- debug: var=service_delete.stdout_lines
+  when: ecs_action == "delete"

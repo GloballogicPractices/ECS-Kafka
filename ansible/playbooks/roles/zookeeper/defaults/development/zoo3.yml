@@ -1,0 +1,52 @@
+task_family: "ZOO3-EXBTOR"
+task_role_arn: ''
+network_mode: 'host'
+
+# First container
+c1_appname: zoo3
+c1_cpu: 1024
+c1_memory: 2048
+c1_soft_memory: 512
+c1_ports:
+  - c1hostPort: 2181
+    c1containerPort: 2181
+    c1protocol: tcp
+  - c1hostPort: 8181
+    c1containerPort: 8181
+    c1protocol: tcp
+  - c1hostPort: 2888
+    c1containerPort: 2888
+    c1protocol: tcp
+  - c1hostPort: 3888
+    c1containerPort: 3888
+    c1protocol: tcp
+c1_image: fali2/ecs-zookeeper
+c1_essential: "True"
+c1_privileged: False
+#c1_environment_variables:
+#   - c1name : HOSTNAME
+#     c1value: "zoo1.weave.local"
+
+c1_awslogs_group: "/aws/ecs/{{env}}"
+# Our logs go to us-east-2
+c1_log_region: "us-east-2"
+c1_awslogs_stream_prefix: zookeeper/
+c1_docker_labels: zookeeper
+c1_docker_security_options: no-new-privileges
+
+# Volume attachment
+
+src_volume_name: "zk-data"
+volume_src_path: "/kafka-data/zookeeper-exhibitor/"
+mount_container_path: "/opt/zookeeper/local_configs/"
+mount_readonly_bool: False
+
+
+# Service Setup
+cluster_name: "Kafka-cluster-{{env}}"
+service_name: "zookeeper3-service"
+count: "1"
+
+# Stage to Prod it has to be rolling update
+maximumPercent: 200
+minimumHealthyPercent: 100

@@ -1,0 +1,44 @@
+# Seed nodes are master nodes
+task_family: "CASSANDRA-SEED"
+task_role_arn: ''
+network_mode: "bridge"
+c1_appname: cassandra-master
+c1_cpu: 100
+c1_memory: 2048
+c1_soft_memory: 1024
+c1_ports:
+  - c1hostPort: 9042
+    c1containerPort: 9042
+    c1protocol: tcp
+  - c1hostPort: 7000
+    c1containerPort: 7000
+    c1protocol: tcp
+  - c1hostPort: 9160
+    c1containerPort: 9160
+    c1protocol: tcp
+c1_image: cassandra:2.2
+c1_essential: True
+c1_privileged: False
+c1_environment_variables:
+  - c1name : CASSANDRA_CLUSTER_NAME
+    c1value: cassandra-cluster-stage
+c1_awslogs_group: "{{log_group_name}}"
+c1_log_region: "{{region}}"
+c1_awslogs_stream_prefix: cassandra-master
+c1_docker_labels: cassandra-master
+c1_docker_security_options: no-new-privileges
+
+# Volume attachment
+src_volume_name: "cassandra-data-ebs"
+volume_src_path: "/cassandra-data"
+mount_container_path: "/var/lib/cassandra"
+mount_readonly_bool: False
+
+# Service Setup
+cluster_name: "Cassandra-Cluster-{{env}}"
+service_name: "cassandra-master"
+count: "1"
+
+# Stage to Prod it has to be rolling update
+maximumPercent: 200
+minimumHealthyPercent: 50

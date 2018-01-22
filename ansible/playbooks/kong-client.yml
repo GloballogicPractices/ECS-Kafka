@@ -1,0 +1,8 @@
+---
+
+- name: Kong Service creation
+  hosts: localhost
+  gather_facts: False
+  become: False
+  roles:
+    - kong-client

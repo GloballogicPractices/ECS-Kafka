@@ -1,0 +1,12 @@
+---
+# This will register our zookeeper instance with our private domain
+- name: Update Route53 entries for zookeeper
+  route53:
+       command: create
+       zone: "{{env}}-internal.com"
+       record: "zookeeper.{{env}}-internal.com"
+       type: A
+       ttl: 300
+       value: "{% for host in groups['tag_Role2_zookeeper_instances'] %}{{ hostvars[host]['ansible_ssh_host']}}{% if not loop.last %},{% endif %}{% endfor %}"
+       overwrite: true
+       private_zone: true

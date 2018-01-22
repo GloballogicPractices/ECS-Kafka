@@ -1,0 +1,88 @@
+task_family: "KONG-API-GATEWAY"
+task_role_arn: ''
+
+# Kong api gw
+c1_appname: kong
+c1_cpu: 100
+c1_memory: 2048
+c1_soft_memory: 512
+c1_ports:
+  - c1hostPort: 8000
+    c1containerPort: 8000
+    c1protocol: tcp
+  - c1hostPort: 8443
+    c1containerPort: 8443
+    c1protocol: tcp
+  - c1hostPort: 8001
+    c1containerPort: 8001
+    c1protocol: tcp
+  - c1hostPort: 7946
+    c1containerPort: 7946
+    c1protocol: tcp
+  - c1hostPort: 7946
+    c1containerPort: 7946
+    c1protocol: udp
+  - c1hostPort: 7373
+    c1containerPort: 7373
+    c1protocol: tcp
+c1_image: fali2/kong-weave
+c1_essential: True
+c1_privileged: False
+c1_environment_variables:
+  - c1name : KONG_CASSANDRA_CONTACT_POINTS
+    c1value: cassandra-master.weave.local
+  - c1name: KONG_CLUSTER_LISTEN_RPC
+    c1value: 127.0.0.1:7373
+  - c1name : KONG_CASSANDRA_CASSANDRA_PORTs
+    c1value: >
+       "9042"
+  - c1name: KONG_DATABASE
+    c1value: cassandra
+  - c1name: KONG_CLUSTER_ENCRYPT_KEY
+    c1value: cg8StVXbQJ0gPvMd9o7yrg==
+  - c1name: KONG_CASSANDRA_KEYSPACE
+    c1value: kong
+  - c1name: KONG_CASSANDRA_REPL_STRATEGY
+    c1value: SimpleStrategy
+  - c1name: KONG_CASSANDRA_REPL_FACTOR
+    c1value: >
+        "2"
+c1_awslogs_group: "{{log_group_name}}"
+c1_log_region: "{{region}}"
+c1_awslogs_stream_prefix: kong-gw-logs/
+c1_docker_labels: kong-containers
+c1_docker_security_options: no-new-privileges
+
+
+# Kong ui
+c2_appname: kong-apigw-ui
+c2_cpu: 256
+c2_memory: 256
+c2_soft_memory: 256
+c2_ports:
+  - c2hostPort: 8080
+    c2containerPort: 8080
+    c2protocol: tcp
+c2_image: fali2/kongui-weave
+c2_essential: True
+c2_privileged: False
+c2_environment_variables:
+  - c2name : PASSWD
+    c2value: myencryptedpassword
+  - c2name: servicename
+    c2value: kong-apigw
+  - c2name: UNAME
+    c2value: kong-user
+c2_awslogs_group: "{{log_group_name}}"
+c2_log_region: "{{region}}"
+c2_awslogs_stream_prefix: kong-ui/
+c2_docker_labels: kong-containers
+
+
+# Service Setup
+cluster_name: "Ingress-Cluster-{{env}}"
+service_name: "kong-client-service"
+count: "2"
+
+maximumPercent: 200
+minimumHealthyPercent: 50

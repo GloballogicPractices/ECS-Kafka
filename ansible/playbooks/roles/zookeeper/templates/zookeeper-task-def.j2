@@ -1,0 +1,84 @@
+#jinja2:lstrip_blocks: True
+containers:
+  - appname: {{ c1_appname }}
+    family: {{ task_family }}
+    taskRoleArn: {{ task_role_arn }}
+    networkMode: {{ network_mode }}
+    containerDefinitions:
+    # There can be multiple containers in task def
+     - name: {{ c1_appname }}
+       cpu: {{ c1_cpu }}
+       memory: {{ c1_memory }}
+       memoryReservation: {{ c1_soft_memory }}
+       portMappings:
+       {% for hostport in c1_ports %}
+          - hostPort: {{ hostport['c1hostPort'] }}
+            containerPort: {{ hostport['c1containerPort'] }}
+            protocol: {{ hostport['c1protocol'] }}
+       {% endfor %}
+       image: {{ c1_image }}
+       essential: {{ c1_essential }}
+       privileged: {{ c1_privileged }}
+       {% if c1_environment_variables is defined %}
+       environment:
+       {% for env in c1_environment_variables %}
+          - name: {{ env['c1name'] }}
+            value: {{ env['c1value'] }}
+       {% endfor %}
+       {% endif %}
+       mountPoints:
+       - sourceVolume: {{ src_volume_name }}
+         containerPath: {{ mount_container_path }}
+         readOnly: {{ mount_readonly_bool }}
+       logConfiguration:
+         logDriver: 'awslogs'
+         options:
+            awslogs-group: {{ c1_awslogs_group }}
+            awslogs-region: {{ c1_log_region }}
+            awslogs-stream-prefix: {{ c1_awslogs_stream_prefix }}
+       dockerLabels:
+           name: {{ c1_docker_labels }}
+       dockerSecurityOptions:
+           - {{ c1_docker_security_options }}
+    volumes:
+       - name: {{ src_volume_name }}
+         host:
+           sourcePath: {{ volume_src_path }}
+
+    # ***********************************************************************************************************
+    # Service parameters will be used to create service
+    # We can add load balancers alo if required.
+    # Please visit : http://boto3.readthedocs.io/en/latest/reference/services/ecs.html#ECS.Client.create_service
+    # ***********************************************************************************************************
+    serviceCreate:
+      - cluster: {{ cluster_name }}
+        serviceName: {{ service_name }}
+        # Task definition is family:revision.
+        # Creat service on latest revision and use update to roll back o deploy new version
+        taskDefinition: {{ task_family }}
+        desiredCount: {{ count }}
+        clientToken: {{ service_name }}
+        deploymentConfiguration:
+            maximumPercent: {{ maximumPercent }}
+            minimumHealthyPercent: {{ minimumHealthyPercent }}
+
+    # ******************************************************************
+    # Service Update parameters will be used to update running service
+    # ******************************************************************
+    serviceUpdate:
+      - cluster: {{ cluster_name }}
+        serviceName: {{ service_name }}
+        # Desired count also can be updated via command line
+        desiredCount: {{ count }}
+        # Specify task def revision to roll back
+        taskDefinition: {{ task_family }}
+        deploymentConfiguration:
+           maximumPercent: {{ maximumPercent }}
+           minimumHealthyPercent: {{ minimumHealthyPercent }}
+    # **********************************************************************
+    # Service delete will be used to delete services where running count is 0
+    # Cannot be used via automated tools as it requires user confimration
+    # **********************************************************************
+    serviceDelete:
+      - cluster:  {{ cluster_name }}
+        serviceName: {{ service_name }}

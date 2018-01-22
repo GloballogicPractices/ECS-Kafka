@@ -1,0 +1,8 @@
+---
+
+- name: Kafka container stack setup
+  hosts: localhost
+  gather_facts: False
+  become: False
+  roles:
+    - kafka

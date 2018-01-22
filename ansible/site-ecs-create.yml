@@ -1,0 +1,51 @@
+---
+
+#####################################################################################
+#####################################################################################
+
+
+- include: playbooks/cassandra-master.yml
+  vars:
+    ecs_action: create
+    env: "{{env}}"
+    region: "{{region}}"
+    log_group_name: "{{log_group_name}}"
+
+- include: playbooks/cassandra-client.yml
+  vars:
+    ecs_action: create
+    env: "{{env}}"
+    region: "{{region}}"
+    log_group_name: "{{log_group_name}}"
+
+- include: playbooks/zookeeper.yml
+  vars:
+    ecs_action: create
+    env: "{{env}}"
+    region: "{{region}}"
+    kafka_zk_cluster_name: "{{kafka_zk_cluster_name}}"
+
+- include: playbooks/kafka.yml
+  vars:
+    ecs_action: create
+    env: "{{env}}"
+    region: "{{region}}"
+    kafka_zk_cluster_name: "{{kafka_zk_cluster_name}}"
+
+#############################
+# Keep kong in last as it has
+# dependency on ELB
+#############################
+- include: playbooks/kong-master.yml
+  vars:
+    ecs_action: create
+    env: "{{env}}"
+    region: "{{region}}"
+    log_group_name: "{{log_group_name}}"
+
+- include: playbooks/kong-client.yml
+  vars:
+    ecs_action: create
+    env: "{{env}}"
+    region: "{{region}}"
+    log_group_name: "{{log_group_name}}"
