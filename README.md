@@ -6,9 +6,9 @@
 ###### -- EFS volumes mounted and used by both Kafka & Zookeeper
 ###### -- Scalable - Easy horizontal scaling for Kafka nodes
 
+<br />
 
-
-![alt text](https://raw.githubusercontent.com/GloballogicPractices/ECS-kafka/master/images/kafka-on-ecs.png)
+![alt text](https://github.com/GloballogicPractices/ECS-Kafka/blob/master/images/kafka.png)
 
 <br />
 =======
@@ -43,7 +43,7 @@
 
 #### Deployment architecture
 ---
-![alt text](https://raw.githubusercontent.com/faizan82/ECS-kong/master/images/kong-architecture.png)
+![alt text](https://github.com/GloballogicPractices/ECS-Kafka/blob/master/images/kafka-on-ecs.png)
 
 
 <br />
